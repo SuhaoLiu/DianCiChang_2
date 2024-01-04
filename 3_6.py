@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
+
 #参量
 x = 3 #x方向网格数
 y = 2 #y方向网格数
@@ -91,4 +92,5 @@ for i in range(1, (x+1) * (y+1) + 1):
 print(coordinate)
 plt.imshow(coordinate)
 plt.colorbar()
-plt.show()
+#TODO: 规范作图
+plt.savefig('/home/lsh/workspace/DianCiChang_2/test.png')
