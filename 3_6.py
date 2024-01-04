@@ -1,4 +1,5 @@
 import numpy as np
+from matplotlib import pyplot as plt
 
 #参量
 x = 3 #x方向网格数
@@ -8,7 +9,6 @@ delta_y = 3 #y方向网格间距
 
 #坐标
 coordinate = np.zeros([x+1, y+1]) #初始化坐标矩阵, x+1行y+1列
-
 
 #节点矩阵坐标
 points = {
@@ -69,5 +69,26 @@ def analysis(triangles, points):
     K = K.T + K - np.diag(np.diag(K)) #对称化
     return K
 
+#刚度矩阵
+K = analysis(triangles, points)
+K11 = K[0:6, 0:6]
+K12 = K[0:6, 6:12]
+
+#计算位向量
+A = np.zeros((x+1) * (y+1)) #初始化位向量
+for i in range(1, (x+1) * (y+1) + 1):
+    A[i-1] = coordinate[points['p' + str(i)]]
+
+A_unknown = np.dot(np.linalg.inv(K11), -1 * np.dot(K12, A[6:12]))
+
+A = np.concatenate((A_unknown, A[6:12]), axis=0)
+
+#回填坐标
+for i in range(1, (x+1) * (y+1) + 1):
+    coordinate[points['p' + str(i)]] = A[i-1]
+
+#输出&作图
 print(coordinate)
-print(analysis(triangles, points))
+plt.imshow(coordinate)
+plt.colorbar()
+plt.show()
