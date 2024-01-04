@@ -8,9 +8,7 @@ delta_y = 3 #y方向网格间距
 
 #坐标
 coordinate = np.zeros([x+1, y+1]) #初始化坐标矩阵, x+1行y+1列
-for i in range(x+1):
-    for j in range(y+1):
-        coordinate[i][j] = i*delta_x + j*delta_y
+
 
 #节点矩阵坐标
 points = {
@@ -30,4 +28,46 @@ triangles = {
 coordinate[points['p7']] = coordinate[points['p8']] = coordinate[points['p9']]  = 0
 coordinate[points['p10']] = coordinate[points['p11']] = coordinate[points['p12']] = 100
 
+#单元分析
+def analysis(triangles, points):
+    global x, y, delta_x, delta_y
+    K = np.zeros([(x+1) * (y+1), (x+1) * (y+1)]) #初始化刚度矩阵
+    for triangle in triangles:
+        #顶点坐标
+        p1 = points['p' + str(triangles[triangle][0])]
+        p2 = points['p' + str(triangles[triangle][1])]
+        p3 = points['p' + str(triangles[triangle][2])]
+
+        #bi = yj - ym（逆时针）, ci = xm - xj（顺时针）
+        b1 = delta_y * (p2[1] - p3[1])
+        b2 = delta_y * (p3[1] - p1[1])
+        b3 = delta_y * (p1[1] - p2[1])
+
+        c1 = delta_x * (p3[0] - p2[0])
+        c2 = delta_x * (p1[0] - p3[0])
+        c3 = delta_x * (p2[0] - p1[0])
+
+        #fourDelta = 2 * (b1c2 - b2c1)
+        fourDelta = 2 * (b1 * c2 - b2 * c1)
+
+        #Kij = (bibj + cicj) / fourDelta
+        K11 = (b1 * b1 + c1 * c1) / fourDelta
+        K12 = (b1 * b2 + c1 * c2) / fourDelta
+        K13 = (b1 * b3 + c1 * c3) / fourDelta
+        K22 = (b2 * b2 + c2 * c2) / fourDelta
+        K23 = (b2 * b3 + c2 * c3) / fourDelta
+        K33 = (b3 * b3 + c3 * c3) / fourDelta
+
+        #K = K + Kij
+        K[triangles[triangle][0]-1, triangles[triangle][0]-1] += K11
+        K[triangles[triangle][0]-1, triangles[triangle][1]-1] += K12
+        K[triangles[triangle][0]-1, triangles[triangle][2]-1] += K13
+        K[triangles[triangle][1]-1, triangles[triangle][1]-1] += K22
+        K[triangles[triangle][1]-1, triangles[triangle][2]-1] += K23
+        K[triangles[triangle][2]-1, triangles[triangle][2]-1] += K33
+    
+    K = K.T + K - np.diag(np.diag(K)) #对称化
+    return K
+
 print(coordinate)
+print(analysis(triangles, points))
