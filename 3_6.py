@@ -1,14 +1,13 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-
 #参量
 x = 3 #x方向网格数
 y = 2 #y方向网格数
 delta_x = 3 #x方向网格间距
 delta_y = 3 #y方向网格间距
 
-#坐标
+#网格划分
 coordinate = np.zeros([x+1, y+1]) #初始化坐标矩阵, x+1行y+1列
 
 #节点矩阵坐标
@@ -25,14 +24,24 @@ triangles = {
     't9': [2, 10, 4], 't10': [4, 10, 11], 't11': [4, 11, 12], 't12': [4, 12, 6]
 }
 
-#边界值
+#强加边界
 coordinate[points['p7']] = coordinate[points['p8']] = coordinate[points['p9']]  = 0
 coordinate[points['p10']] = coordinate[points['p11']] = coordinate[points['p12']] = 100
 
 #单元分析
 def analysis(triangles, points):
+    """计算刚度矩阵
+
+    Args:
+        triangles (dictionary): 三角单元集
+        points (dictionary): 节点坐标集
+
+    Returns:
+        K (array): 刚度矩阵
+    """
     global x, y, delta_x, delta_y
     K = np.zeros([(x+1) * (y+1), (x+1) * (y+1)]) #初始化刚度矩阵
+
     for triangle in triangles:
         #顶点坐标
         p1 = points['p' + str(triangles[triangle][0])]
